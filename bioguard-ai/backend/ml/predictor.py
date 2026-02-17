@@ -11,8 +11,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
-import shap
 from loguru import logger
+try:
+    import shap
+    SHAP_AVAILABLE = True
+except ImportError:
+    SHAP_AVAILABLE = False
+    logger.warning("SHAP library not found. Explainability features will be disabled.")
+
 from ml.data_generator import generate_training_data, get_village_data, VILLAGES
 
 
@@ -146,8 +152,11 @@ class OutbreakPredictor:
         logger.info(f"   ✓ Meta-model accuracy: {meta_acc:.2%}")
         
         # SHAP explainer
-        logger.info("   Initializing SHAP explainer...")
-        self.explainer = shap.TreeExplainer(self.model_disease)
+        if SHAP_AVAILABLE:
+            logger.info("   Initializing SHAP explainer...")
+            self.explainer = shap.TreeExplainer(self.model_disease)
+        else:
+            logger.warning("   Skipping SHAP initialization (library not found)")
         
         self.accuracy_score = (disease_acc + alert_acc + meta_acc) / 3 * 100
         self.trained = True
@@ -206,8 +215,15 @@ class OutbreakPredictor:
         alert_level = self.label_encoder_alert.inverse_transform([alert_pred_idx])[0]
         
         # SHAP explanation
-        shap_values = self.explainer.shap_values(X)
-        top_risk_factors = self._extract_top_shap_features(shap_values, X)
+        if SHAP_AVAILABLE and self.explainer:
+            try:
+                shap_values = self.explainer.shap_values(X)
+                top_risk_factors = self._extract_top_shap_features(shap_values, X)
+            except Exception as e:
+                logger.error(f"Error calculating SHAP values: {e}")
+                top_risk_factors = self._get_demo_risk_factors(village_id)
+        else:
+            top_risk_factors = self._get_demo_risk_factors(village_id)
         
         return {
             "village_id": village_id,
