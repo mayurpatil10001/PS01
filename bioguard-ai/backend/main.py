@@ -19,7 +19,7 @@ from sensors.sensor_manager import sensor_manager
 from services.alert_service import alert_service
 
 # Import routers
-from routers import predictions, analytics, alerts, raspberry_pi, auth, sensor_ingest
+from routers import predictions, analytics, alerts, raspberry_pi, auth, sensor_ingest, chatbot
 
 # Configure logging
 logger.remove()
@@ -186,6 +186,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router)
 app.include_router(sensor_ingest.router)
+app.include_router(chatbot.router)
 app.include_router(predictions.router)
 app.include_router(analytics.router)
 app.include_router(alerts.router)
