@@ -5,6 +5,24 @@ import uuid
 from database.db import Base
 
 
+class User(Base):
+    """User model for authentication and authorization."""
+    
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    role = Column(String, nullable=False)  # "analyzer" or "pi_sender"
+    device_id = Column(String, nullable=True)  # For pi_sender: "RPI5-UNIT-001"
+    village_id = Column(String, nullable=True)  # For pi_sender: "MH_SHP"
+    village_name = Column(String, nullable=True)  # For pi_sender: "Shirpur"
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)
+
+
 class Alert(Base):
     """Alert model for disease outbreak alerts."""
     

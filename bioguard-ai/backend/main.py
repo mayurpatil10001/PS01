@@ -19,7 +19,7 @@ from sensors.sensor_manager import sensor_manager
 from services.alert_service import alert_service
 
 # Import routers
-from routers import predictions, analytics, alerts, raspberry_pi
+from routers import predictions, analytics, alerts, raspberry_pi, auth, sensor_ingest
 
 # Configure logging
 logger.remove()
@@ -136,6 +136,10 @@ async def lifespan(app: FastAPI):
     init_db()
     logger.info("✅ Database initialized")
     
+    # Seed demo users
+    from database.seed_users import seed_demo_users
+    seed_demo_users()
+    
     # Seed demo alerts
     alert_service.seed_demo_alerts()
     
@@ -180,6 +184,8 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router)
+app.include_router(sensor_ingest.router)
 app.include_router(predictions.router)
 app.include_router(analytics.router)
 app.include_router(alerts.router)
