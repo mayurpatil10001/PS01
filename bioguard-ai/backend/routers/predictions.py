@@ -46,6 +46,13 @@ async def get_all_village_predictions():
         
         # Get prediction
         prediction = predictor.predict(village_id, sensor_reading)
+        
+        # Add village metadata
+        prediction["state"] = village["state"]
+        prediction["lat"] = village["lat"]
+        prediction["lon"] = village["lon"]
+        prediction["population"] = village["pop"]
+        
         predictions.append(prediction)
     
     # Sort by risk score descending
